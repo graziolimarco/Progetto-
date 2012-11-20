@@ -44,7 +44,7 @@ public class GameActivity extends Activity implements MessageReceiver{
 			public void run() {
 				// TODO Auto-generated method stub
 					if ( statocorrente == Stato.WAIT_FOR_STARTACK){
-					connection.send("START"); 
+					connection.send("START"); //Invio il messaggio START per la connessione ed inizio gioco
 					}
 			}
 		};
@@ -95,11 +95,11 @@ public class GameActivity extends Activity implements MessageReceiver{
 	    }
 
 
-	    private State selectTurn(State player) {
+	    private State selectTurn(State player) { //Selezione del turno della giocata
 	        mGameView.setCurrentPlayer(player);
 	        mButtonNext.setEnabled(false);
 
-	        if (player == State.SELEZIONE) {
+	        if (player == State.SELEZIONE) { 
 	        	Log.d(tag, "Turno GIOCATORE:"+nomeMio);
 	        	Toast.makeText(getApplicationContext(), "Tocca a te:" +nomeMio, Toast.LENGTH_LONG).show();
 	            mGameView.setEnabled(true);
@@ -121,7 +121,7 @@ public class GameActivity extends Activity implements MessageReceiver{
 	        }
 	    }
 
-	    private class MyButtonListener implements OnClickListener {
+	    private class MyButtonListener implements OnClickListener { //Azioni svolte dal click sul bottone
 
 	        public void onClick(View v) {
 	            State player = mGameView.getCurrentPlayer();
@@ -146,12 +146,12 @@ public class GameActivity extends Activity implements MessageReceiver{
 	        	
 	        	State player = mGameView.getCurrentPlayer();
 
-	        	if (msg.what == 100){ 
+	        	if (msg.what == 100){ //Passaggio allo stato di attesa, quindi attendo la prima azione del gioco
 	        		player = State.ATTESA;
 			        if (!checkGameFinished(player)){
 			       		selectTurn(player);
 			       	}
-	        	}else if (msg.what == 200){
+	        	}else if (msg.what == 200){ //Passaggio allo stato di selezione, quindi si fa prima azione del gioco
 	        		player = State.SELEZIONE;
 			        if (!checkGameFinished(player)){
 			       		selectTurn(player);
@@ -212,7 +212,7 @@ public class GameActivity extends Activity implements MessageReceiver{
 	        return player == State.SELEZIONE ? State.ATTESA : State.SELEZIONE;
 	    }
 
-	    private void finishTurn() {
+	    private void finishTurn() { 
 	        State player = mGameView.getCurrentPlayer();
 	        if (!checkGameFinished(player)) {
 	            player = selectTurn(getOtherPlayer(player));
@@ -277,7 +277,7 @@ public class GameActivity extends Activity implements MessageReceiver{
 	        setWinState(player);
 	    }
 
-	    private void setWinState(State player) {
+	    private void setWinState(State player) { 
 	        mButtonNext.setEnabled(true);
 	        mButtonNext.setText("Back");
 
@@ -304,18 +304,18 @@ public class GameActivity extends Activity implements MessageReceiver{
 			if(msg.equals("START")){
 				Log.d(tag, "Ricevuto START:sei pronto a giocare");
 				if(statocorrente == Stato.WAIT_FOR_START){
-					connection.send("STARTACK");
+					connection.send("STARTACK"); //Se ricevo START mando un ACK indietro di conferma 
 					mHandler.sendEmptyMessage(100);
 				}
-			}else if(msg.equals("STARTACK")){ //mando l'ack indietro
+			}else if(msg.equals("STARTACK")){ 
 				Log.d(msg, "Ricevuto STARTACK:connessione svolta, il tuo avversario è pronto");
 				if(statocorrente == Stato.WAIT_FOR_STARTACK){
-				timer.cancel();
+				timer.cancel(); //Ricevo ACK e cancello il timer
 				mHandler.sendEmptyMessage(200);
 				}
 			}
 			
-			if(msg.startsWith("CASELLA:")){
+			if(msg.startsWith("CASELLA:")){ //Ricevo la casella da occupare
 					casella=msg.split(":")[1];
 					Log.d(tag, casella);
 					Log.d(tag, "Stato:"+player);
@@ -344,10 +344,10 @@ public class GameActivity extends Activity implements MessageReceiver{
 		}
 		
 		@Override
-		protected void onPause() {
+		protected void onStop() {
 			// TODO Auto-generated method stub
 			super.onPause();
-			connection.close();
+			connection.close(); //Connessione chiusa
 			timer.cancel();
 		}
 		
