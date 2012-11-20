@@ -33,8 +33,8 @@ public class GameView extends View {
         WIN(-2),
         EMPTY(0),
         SELEZIONE(1),
-        ATTESA(2), WAIT_FOR_START(3);
-
+        ATTESA(2);
+        
         private int mValue;
 
         private State(int value) {
@@ -140,8 +140,8 @@ public class GameView extends View {
         return mData;
     }
 
-    public void setCell(int cellIndex, State value) {
-        mData[cellIndex] = value;
+    public void setCell(int numeroCasella, State value) {
+        mData[numeroCasella] = value;
         invalidate();
     }
 

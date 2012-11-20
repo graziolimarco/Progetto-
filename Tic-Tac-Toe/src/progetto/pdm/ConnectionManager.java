@@ -17,7 +17,7 @@ public class ConnectionManager implements PacketListener {
 
 	public String TAG = "ppl.connection.manager";
 
-	private Connection connection;
+	private Connection connection; 
 	private String nomeMio, nomeAvversario;
 	private MessageReceiver mr;
 

@@ -26,13 +26,18 @@ public class GameActivity extends Activity implements MessageReceiver{
 
 	public static final String EXTRA_START_PLAYER =
 	        "progetto.pdm.GameActivity.EXTRA_START_PLAYER";
-
-	    private Handler mHandler = new Handler(new MyHandlerCallback());
+	
+		enum Stato {
+			WAIT_FOR_START, WAIT_FOR_STARTACK
+		}
+		
+		private Stato statocorrente;
+	    private Handler mHandler = new Handler(new MyHandlerCallback()); //Gestore Messaggi Ricevuti
 	    private GameView mGameView;
 	    private Button mButtonNext;
+	    private String nomeMio, nomeAvversario, pass;
 		ConnectionManager connection;
 		TextView et1;
-		private String nomeMio, nomeAvversario, pass;
 		String tag = "GameActivity";
 		String casella;
 		
@@ -42,9 +47,8 @@ public class GameActivity extends Activity implements MessageReceiver{
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				State player = mGameView.getCurrentPlayer();
-				if (player == State.SELEZIONE){
-					connection.send("START");
+					if ( statocorrente == Stato.WAIT_FOR_STARTACK){
+					connection.send("START"); 
 					}
 			}
 		};
@@ -70,21 +74,15 @@ public class GameActivity extends Activity implements MessageReceiver{
 			nomeAvversario = getIntent().getExtras().getString("iltestonelbox2");
 			et1.setText(nomeMio + " VS  " + nomeAvversario);
 				 		
-			connection = new ConnectionManager(nomeMio, pass, nomeAvversario, this);  //Impostazione dei parametri di connessione
-				         
-			State player = mGameView.getCurrentPlayer();	        
+			connection = new ConnectionManager(nomeMio, pass, nomeAvversario, this);  //Impostazione dei parametri di connessione       
 				 		
-			if (nomeAvversario.hashCode()<nomeMio.hashCode()){  //Scelta del giocatore per inizio gioco
-				player = State.SELEZIONE;
-				if (!checkGameFinished(player)) { //Comincio io
-	                 selectTurn(player);
+			if (nomeAvversario.hashCode()<nomeMio.hashCode()){ 
+					//Comincio IO
 	                 timer.schedule(sendStart, 1000, 20000);
-	                 }
-				}else{                            //Comincia Avversario
-					player = State.ATTESA;
-					if (!checkGameFinished(player)) {
-						selectTurn(player);
-						}
+	                 statocorrente = Stato.WAIT_FOR_STARTACK;
+				}else{                            
+					//Comincia Avversario
+					statocorrente = Stato.WAIT_FOR_START;
 					}
 	   
 	    }
@@ -94,12 +92,7 @@ public class GameActivity extends Activity implements MessageReceiver{
 	        super.onResume();
 
 	        State player = mGameView.getCurrentPlayer();
-	        if (player == State.UNKNOWN) {
-	            player = State.fromInt(getIntent().getIntExtra(EXTRA_START_PLAYER, 1));
-	            if (!checkGameFinished(player)) {
-	                selectTurn(player);
-	            }
-	        }
+	        
 	        if (player == State.WIN) {
 	            setWinState(mGameView.getWinner());
 	        }
@@ -138,7 +131,7 @@ public class GameActivity extends Activity implements MessageReceiver{
 	            State player = mGameView.getCurrentPlayer();
 
 	            if (player == State.WIN) {
-	                GameActivity.this.finish(); //Siamo nello stato WIN: Gioco Terminato
+	                GameActivity.this.finish(); 
 
 	            } else if (player == State.SELEZIONE) {
 	                int cell = mGameView.getSelection();
@@ -152,8 +145,23 @@ public class GameActivity extends Activity implements MessageReceiver{
 	        }
 	    }
 
-	    private class MyHandlerCallback implements Callback {  //Si va ad occupare il numero di casella inviata dall'avversario
+	    private class MyHandlerCallback implements Callback {  //Si Gestisce i Messaggi Ricevuti
 	        public boolean handleMessage(Message msg) {
+	        	
+	        	State player = mGameView.getCurrentPlayer();
+
+	        	if (msg.what == 100){
+	        		player = State.ATTESA;
+			        if (!checkGameFinished(player)){
+			       		selectTurn(player);
+			       	}
+	        	}else if (msg.what == 200){
+	        		player = State.SELEZIONE;
+			        if (!checkGameFinished(player)){
+			       		selectTurn(player);
+			       	}
+	        	}
+	        	
 	            if (msg.what == 8) {
 	            	Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA");
 	                mGameView.setCell(8, mGameView.getCurrentPlayer());
@@ -295,18 +303,25 @@ public class GameActivity extends Activity implements MessageReceiver{
 			
 			Log.d(tag,msg);
 			
+			State player = mGameView.getCurrentPlayer();
+			
 			if(msg.equals("START")){
 				Log.d(tag, "Ricevuto START:sei pronto a giocare");
-				connection.send("STARTACK");
+				if(statocorrente == Stato.WAIT_FOR_START){
+					connection.send("STARTACK");
+					mHandler.sendEmptyMessage(100);
+				}
 			}else if(msg.equals("STARTACK")){ //mando l'ack indietro
-				timer.cancel();
 				Log.d(msg, "Ricevuto STARTACK:connessione svolta, il tuo avversario è pronto");
+				if(statocorrente == Stato.WAIT_FOR_STARTACK){
+				timer.cancel();
+				mHandler.sendEmptyMessage(200);
+				}
 			}
 			
 			if(msg.startsWith("CASELLA:")){
 					casella=msg.split(":")[1];
 					Log.d(tag, casella);
-					State player = mGameView.getCurrentPlayer();
 					Log.d(tag, "Stato:"+player);
 					if(casella.contains("8")){
 						mHandler.sendEmptyMessage(8);
