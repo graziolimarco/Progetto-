@@ -45,6 +45,8 @@ public class GameActivity extends Activity implements MessageReceiver{
 				// TODO Auto-generated method stub
 					if ( statocorrente == Stato.WAIT_FOR_STARTACK){
 					connection.send("START"); //Invio il messaggio START per la connessione ed inizio gioco
+					}else{
+						Log.d(tag, "Inviato START ma lo stato è " + statocorrente);
 					}
 			}
 		};
@@ -76,35 +78,25 @@ public class GameActivity extends Activity implements MessageReceiver{
 					//Comincio IO
 	                 timer.schedule(sendStart, 250, 5000);
 	                 statocorrente = Stato.WAIT_FOR_STARTACK;
+	                 Log.d(tag, "STATO INIZIALE:"+statocorrente);
 				}else{                            
 					//Comincia Avversario
 					statocorrente = Stato.WAIT_FOR_START;
+					Log.d(tag, "STATO INIZIALE:"+statocorrente);
 					}
 	   
 	    }
-
-	    @Override
-	    protected void onResume() {
-	        super.onResume();
-
-	        State player = mGameView.getCurrentPlayer();
-	        
-	        if (player == State.WIN) {
-	            setWinState(mGameView.getWinner());
-	        }
-	    }
-
 
 	    private State selectTurn(State player) { //Selezione del turno della giocata
 	        mGameView.setCurrentPlayer(player);
 	        mButtonNext.setEnabled(false);
 
 	        if (player == State.SELEZIONE) { 
-	        	Log.d(tag, "Turno GIOCATORE:"+nomeMio);
+	        	Log.d(tag, "Turno del GIOCATORE:"+nomeMio);
 	        	Toast.makeText(getApplicationContext(), "Tocca a te:" +nomeMio, Toast.LENGTH_LONG).show();
 	            mGameView.setEnabled(true);
 	        } else if (player == State.ATTESA) {
-	        	Log.d(tag, "Turno GIOCATORE:"+nomeAvversario);
+	        	Log.d(tag, "Turno del GIOCATORE:"+nomeAvversario);
 	        	Toast.makeText(getApplicationContext(), "Tocca al tuo Avversario:" +nomeAvversario, Toast.LENGTH_LONG).show();
 	            mGameView.setEnabled(false);
 	        }
@@ -127,15 +119,18 @@ public class GameActivity extends Activity implements MessageReceiver{
 	            State player = mGameView.getCurrentPlayer();
 
 	            if (player == State.WIN) {
-	                GameActivity.this.finish(); //Il gioco è finito si torna alla schermata iniziale
 
+	                GameActivity.this.finish(); //Il gioco è finito si torna alla schermata iniziale
+	                
 	            } else if (player == State.SELEZIONE) {
+	            	
 	                int cell = mGameView.getSelection();
 	                if (cell >= 0) {
 	                    mGameView.stopBlink();
 	                    mGameView.setCell(cell, player);
 	                    connection.send("CASELLA:"+cell);  //Invio casella selezionata
 	                    finishTurn();  //Turno finito, si aspetta la mossa dell'avversario
+	                    
 	                }
 	            }
 	        }
@@ -146,60 +141,62 @@ public class GameActivity extends Activity implements MessageReceiver{
 	        	
 	        	State player = mGameView.getCurrentPlayer();
 
-	        	if (msg.what == 100){ //Passaggio allo stato di attesa, quindi attendo la prima azione del gioco
+	        	if (msg.what == 100){ //Passaggio allo stato di attesa, nel quale attendo la prima azione del gioco
 	        		player = State.ATTESA;
+	        		Log.d(tag, "WAIT_FOR_START ----> ATTESA");
 			        if (!checkGameFinished(player)){
 			       		selectTurn(player);
 			       	}
-	        	}else if (msg.what == 200){ //Passaggio allo stato di selezione, quindi si fa prima azione del gioco
+	        	}else if (msg.what == 200){ //Passaggio allo stato di selezione, nel quale si va a fare la prima azione del gioco
 	        		player = State.SELEZIONE;
+	        		Log.d(tag, "WAIT_FOR_STARTACK ----> SELEZIONE");
 			        if (!checkGameFinished(player)){
 			       		selectTurn(player);
 			       	}
 	        	}
 	        	
 	            if (msg.what == 8) {
-	            	Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA");
+	            	Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA:8");
 	                mGameView.setCell(8, mGameView.getCurrentPlayer());
 	                finishTurn();
 	                return true;
 	            }else if (msg.what == 7) {
-	            	Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA");
+	            	Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA:7");
                     mGameView.setCell(7, mGameView.getCurrentPlayer());
                     finishTurn();
 	                return true;
 				}else if (msg.what == 6) {
-					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA");
+					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA:6");
                     mGameView.setCell(6, mGameView.getCurrentPlayer());
                     finishTurn();
 	                return true;
 				}else if (msg.what == 5) {
-					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA");
+					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA:5");
                     mGameView.setCell(5, mGameView.getCurrentPlayer());
                     finishTurn();
 	                return true;
 				}else if (msg.what == 4) {
-					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA");
+					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA:4");
                     mGameView.setCell(4, mGameView.getCurrentPlayer());
                     finishTurn();
 	                return true;
 				}else if (msg.what == 3) {
-					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA");
+					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA:3");
                     mGameView.setCell(3, mGameView.getCurrentPlayer());
                     finishTurn();
 	                return true;
 				}else if (msg.what == 2) {
-					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA");
+					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA:2");
                     mGameView.setCell(2, mGameView.getCurrentPlayer());
                     finishTurn();
 	                return true;
 				}else if (msg.what == 1) {
-					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA");
+					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA:1");
                     mGameView.setCell(1, mGameView.getCurrentPlayer());
                     finishTurn();
 	                return true;
 				}else if (msg.what == 0) {
-					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA");
+					Log.d(tag, "OCCUPAZIONE CASELLA RICEVUTA:0");
                     mGameView.setCell(0, mGameView.getCurrentPlayer());
                     finishTurn();
 	                return true;
@@ -311,13 +308,13 @@ public class GameActivity extends Activity implements MessageReceiver{
 				Log.d(msg, "Ricevuto STARTACK:connessione svolta, il tuo avversario è pronto");
 				if(statocorrente == Stato.WAIT_FOR_STARTACK){
 				timer.cancel(); //Ricevo ACK e cancello il timer
+				Log.d(tag, "Timer Cancellato");
 				mHandler.sendEmptyMessage(200);
 				}
 			}
 			
 			if(msg.startsWith("CASELLA:")){ //Ricevo la casella da occupare
 					casella=msg.split(":")[1];
-					Log.d(tag, casella);
 					Log.d(tag, "Stato:"+player);
 					if(casella.contains("8")){
 						mHandler.sendEmptyMessage(8);
@@ -346,9 +343,10 @@ public class GameActivity extends Activity implements MessageReceiver{
 		@Override
 		protected void onStop() {
 			// TODO Auto-generated method stub
-			super.onPause();
-			connection.close(); //Connessione chiusa
+			super.onStop();
+			connection.close();
 			timer.cancel();
+			Log.d(tag, "Connessione Chiusa");
 		}
 		
 }	
