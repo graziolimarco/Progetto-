@@ -74,7 +74,7 @@ public class GameActivity extends Activity implements MessageReceiver{
 				 		
 			if (nomeAvversario.hashCode()<nomeMio.hashCode()){ 
 					//Comincio IO
-	                 timer.schedule(sendStart, 500, 10000);
+	                 timer.schedule(sendStart, 250, 5000);
 	                 statocorrente = Stato.WAIT_FOR_STARTACK;
 				}else{                            
 					//Comincia Avversario
@@ -342,5 +342,13 @@ public class GameActivity extends Activity implements MessageReceiver{
 			}
 			
 		}
-
+		
+		@Override
+		protected void onPause() {
+			// TODO Auto-generated method stub
+			super.onPause();
+			connection.close();
+			timer.cancel();
+		}
+		
 }	
