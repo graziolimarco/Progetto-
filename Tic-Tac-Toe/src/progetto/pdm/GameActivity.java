@@ -22,10 +22,6 @@ import progetto.pdm.GameView.State;
 
 
 public class GameActivity extends Activity implements MessageReceiver{
-
-
-	public static final String EXTRA_START_PLAYER =
-	        "progetto.pdm.GameActivity.EXTRA_START_PLAYER";
 	
 		enum Stato {
 			WAIT_FOR_START, WAIT_FOR_STARTACK
@@ -78,7 +74,7 @@ public class GameActivity extends Activity implements MessageReceiver{
 				 		
 			if (nomeAvversario.hashCode()<nomeMio.hashCode()){ 
 					//Comincio IO
-	                 timer.schedule(sendStart, 1000, 20000);
+	                 timer.schedule(sendStart, 500, 10000);
 	                 statocorrente = Stato.WAIT_FOR_STARTACK;
 				}else{                            
 					//Comincia Avversario
@@ -131,7 +127,7 @@ public class GameActivity extends Activity implements MessageReceiver{
 	            State player = mGameView.getCurrentPlayer();
 
 	            if (player == State.WIN) {
-	                GameActivity.this.finish(); 
+	                GameActivity.this.finish(); //Il gioco è finito si torna alla schermata iniziale
 
 	            } else if (player == State.SELEZIONE) {
 	                int cell = mGameView.getSelection();
@@ -150,7 +146,7 @@ public class GameActivity extends Activity implements MessageReceiver{
 	        	
 	        	State player = mGameView.getCurrentPlayer();
 
-	        	if (msg.what == 100){
+	        	if (msg.what == 100){ 
 	        		player = State.ATTESA;
 			        if (!checkGameFinished(player)){
 			       		selectTurn(player);
